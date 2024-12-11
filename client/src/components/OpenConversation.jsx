@@ -10,14 +10,21 @@ export default function OpenConversation() {
     }
   }, []);
 
-  const { sendMessage, selectedConversation } = useConversations();
+  const { conversations, sendMessage, selectedConversation } =
+    useConversations();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage(
+      selectedConversation.conversationId,
       selectedConversation.recipients.map((r) => r.id),
       text
     );
+    console.log("Send message", {
+      targetConversation: selectedConversation.conversationId,
+      recipients: selectedConversation.recipients.map((r) => r.id),
+      text: text,
+    });
     setText("");
   };
 

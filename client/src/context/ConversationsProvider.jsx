@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import useLocalStorage from "../components/hooks/useLocalStorage";
 import { useContacts } from "./ContactsProvider";
 import { useSocket } from "./SocketProvider";
+import { v4 as uuidv4 } from "uuid";
 
 const ConversationsContext = React.createContext();
 
@@ -20,18 +21,21 @@ function ConversationsProvider({ id, children }) {
 
   const createConversations = (recipients) => {
     setConversations((prevConversations) => {
-      return [...prevConversations, { recipients, messages: [] }];
+      return [
+        ...prevConversations,
+        { conversationId: uuidv4(), recipients, messages: [] },
+      ];
     });
   };
 
   const addMessageToConversation = useCallback(
-    ({ recipients, text, sender }) => {
+    ({ conversationId, recipients, sender, text }) => {
       setConversations((prevConversations) => {
-        let matchingConversation = false;
         const newMessage = { sender, text };
+        // If target conversation is found, add message into target conversation's messages array
+        // Else conversation remains unchanged
         const updatedConversations = prevConversations.map((conversation) => {
-          if (arrayIsEqual(conversation.recipients, recipients)) {
-            matchingConversation = true;
+          if (conversationId === conversation.conversationId) {
             return {
               ...conversation,
               messages: [...conversation.messages, newMessage],
@@ -40,14 +44,24 @@ function ConversationsProvider({ id, children }) {
           return conversation;
         });
 
-        if (matchingConversation) {
-          return updatedConversations;
-        } else {
-          return [...prevConversations, { recipients, messages: [newMessage] }];
+        // Find target conversation in updated conversations (based on id)
+        const matchingConversation = updatedConversations.find(
+          (c) => c.conversationId === conversationId
+        );
+
+        // If target conversation not found, add conversation
+        // If target is found, do nothing as message is already added.
+        if (!matchingConversation) {
+          updatedConversations.push({
+            conversationId: conversationId,
+            recipients: recipients.filter((recipient) => recipient !== id),
+            messages: [{ sender, text }],
+          });
         }
+        return updatedConversations;
       });
     },
-    [setConversations]
+    [setConversations, id]
   );
 
   useEffect(() => {
@@ -57,9 +71,18 @@ function ConversationsProvider({ id, children }) {
     return () => socket.off("receive-message");
   }, [socket, addMessageToConversation]);
 
-  function sendMessage(recipients, text) {
-    socket.emit("send-message", { recipients, text });
-    addMessageToConversation({ recipients, text, sender: id });
+  function sendMessage(selectedConversationId, recipients, text) {
+    socket.emit("send-message", {
+      conversationId: selectedConversationId,
+      recipients,
+      text,
+    });
+    addMessageToConversation({
+      conversationId: selectedConversationId,
+      recipients,
+      text,
+      sender: id,
+    });
   }
 
   const formattedConversations = conversations.map((conversation, index) => {

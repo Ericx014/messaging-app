@@ -1,15 +1,17 @@
 import { useConversations } from "../context/ConversationsProvider";
 
 export default function Conversations() {
-  const { conversations, selectConversationIndex } =
-    useConversations();
+  const { conversations, selectConversationIndex } = useConversations();
 
   return (
     <>
       {conversations.map((conversation) => (
         <div
           key={conversation.index}
-          onClick={() => selectConversationIndex(conversation.index)}
+          onClick={() => {
+            selectConversationIndex(conversation.index);
+						console.log(conversation)
+          }}
           className={`w-full py-3 px-4 cursor-pointer transition-colors duration-200 
             ${
               conversation.selected
