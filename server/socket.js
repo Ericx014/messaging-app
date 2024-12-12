@@ -1,9 +1,12 @@
-const io = require("socket.io")(5000, {
+const PORT = 5000
+const io = require("socket.io")(PORT, {
   cors: {
-    origin: "http://localhost:5173", // Frontend URL
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
+
+console.log("Socket server running on port", PORT)
 
 io.on("connection", (socket) => {
   const id = socket.handshake.query.id;
