@@ -11,4 +11,4 @@ const create = async (newUser) => {
   return response.data;
 };
 
-export default { create };
+export default { create, getAll };

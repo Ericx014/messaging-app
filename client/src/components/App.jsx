@@ -1,4 +1,4 @@
-import { useContext, createContext } from "react";
+import { useState, useContext, createContext, useEffect } from "react";
 import useLocalStorage from "./hooks/useLocalStorage";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
@@ -10,17 +10,38 @@ import userServices from "../services/users";
 export const IdContext = createContext();
 
 const App = () => {
+  const [users, setUsers] = useState([]);
   const [id, setId] = useLocalStorage("id");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const fetchedUsers = await userServices.getAll();
+        console.log(fetchedUsers);
+        setUsers(fetchedUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Add functionality to not create user if user already exists
   // Get all users and map through to check using find() or some()
-  const login = async (id) => {
-    try {
-      const createdUser = await userServices.create({ userId: id });
-      console.log(createdUser);
-      setId(id);
-    } catch (e) {
-      console.error(e);
+  const login = async (inputUserId) => {
+    const idExists = users.some((user) => user.userId === inputUserId);
+    if (!idExists) {
+      try {
+        const createdUser = await userServices.create({ userId: inputUserId });
+        console.log(createdUser);
+        setId(id);
+        setUsers((prevUsers) => [...prevUsers, createdUser]);
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      setId(inputUserId);
     }
   };
 

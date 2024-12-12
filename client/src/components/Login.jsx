@@ -1,6 +1,5 @@
-import { Button } from "react-bootstrap";
 import { useRef } from "react";
-import { v4 as uuidV4 } from "uuid";
+// import { v4 as uuidV4 } from "uuid";
 
 const Login = ({ onIdSubmit }) => {
   const idRef = useRef();
@@ -10,9 +9,9 @@ const Login = ({ onIdSubmit }) => {
     onIdSubmit(idRef.current.value);
   };
 
-  const createNewId = () => {
-    onIdSubmit(uuidV4());
-  };
+  // const createNewId = () => {
+  //   onIdSubmit(uuidV4());
+  // };
 
   return (
     <section className="flex justify-center items-center h-screen bg-[#778da941]">
@@ -26,19 +25,19 @@ const Login = ({ onIdSubmit }) => {
         <input
           type="text"
           placeholder="Enter your ID."
-          className="focus:outline-none focus:placeholder-transparent focus:ring-[#778da9] focus:ring-2 bg-gray-200 text-black px-4 py-3 rounded-lg w-full mb-7"
+          className="focus:outline-none focus:placeholder-transparent focus:ring-[#778da9] focus:ring-2 bg-gray-200 text-black px-4 py-3 rounded-lg w-full mb-3"
           id="email"
           ref={idRef}
           required
         />
         <div className="flex flex-row gap-5">
-          <button
+          {/* <button
             type="button"
             onClick={createNewId}
             className="bg-[#4a68a0] text-white px-4 py-3 rounded-lg w-full mb-2"
           >
             Create a new ID
-          </button>
+          </button> */}
           <button
             type="submit"
             className="bg-[#1b263b] text-white px-4 py-3 rounded-lg w-full mb-2"
