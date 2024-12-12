@@ -3,6 +3,7 @@ import useLocalStorage from "../components/hooks/useLocalStorage";
 import { useContacts } from "./ContactsProvider";
 import { useSocket } from "./SocketProvider";
 import { v4 as uuidv4 } from "uuid";
+import ConversationServices from "../services/conversations";
 
 const ConversationsContext = React.createContext();
 
@@ -11,20 +12,38 @@ function useConversations() {
 }
 
 function ConversationsProvider({ id, children }) {
-  const [conversations, setConversations] = useLocalStorage(
-    "conversations",
-    []
-  );
   const [selectedConversationIndex, setSelectedConversationIndex] = useState(0);
   const { contacts } = useContacts();
   const socket = useSocket();
+	  const [conversations, setConversations] = useLocalStorage(
+      "conversations",
+      []
+    );
 
-  const createConversations = (recipients) => {
+  useEffect(() => {
+    const loadConversations = async () => {
+      const fetchedConversations = await ConversationServices.getAll();
+      const userConv = fetchedConversations.filter((conversation) =>
+        conversation.recipients.includes(id)
+      );
+      console.log("Current user conv", userConv);
+      setConversations(userConv);
+    };
+    loadConversations();
+  }, [id]);
+
+  const createConversations = async (recipients) => {
+    const newConversation = {
+      conversationId: uuidv4(),
+      recipients: [...recipients, id],
+      messages: [],
+    };
+    const savedConversation = await ConversationServices.create(
+      newConversation
+    );
+    console.log(savedConversation);
     setConversations((prevConversations) => {
-      return [
-        ...prevConversations,
-        { conversationId: uuidv4(), recipients, messages: [] },
-      ];
+      return [...prevConversations, newConversation];
     });
   };
 
@@ -43,18 +62,16 @@ function ConversationsProvider({ id, children }) {
           }
           return conversation;
         });
-
         // Find target conversation in updated conversations (based on id)
         const matchingConversation = updatedConversations.find(
           (c) => c.conversationId === conversationId
         );
-
         // If target conversation not found, add conversation
         // If target is found, do nothing as message is already added.
         if (!matchingConversation) {
           updatedConversations.push({
             conversationId: conversationId,
-            recipients: recipients.filter((recipient) => recipient !== id),
+            recipients: recipients,
             messages: [{ sender, text }],
           });
         }
@@ -71,19 +88,37 @@ function ConversationsProvider({ id, children }) {
     return () => socket.off("receive-message");
   }, [socket, addMessageToConversation]);
 
-  function sendMessage(selectedConversationId, recipients, text) {
-    socket.emit("send-message", {
-      conversationId: selectedConversationId,
-      recipients,
-      text,
-    });
-    addMessageToConversation({
-      conversationId: selectedConversationId,
-      recipients,
-      text,
-      sender: id,
-    });
-  }
+  const sendMessage = async (selectedConversationId, recipients, text) => {
+    try {
+      // Send message to socket
+      socket.emit("send-message", {
+        conversationId: selectedConversationId,
+        recipients,
+        text,
+      });
+      const message = {
+        sender: id,
+        text,
+      };
+
+      // Add message to db
+      const updatedConversation = await ConversationServices.addMessage(
+        selectedConversationId,
+        message
+      );
+      console.log("Message added successfully", updatedConversation);
+
+      // Add message to chat (frontend)
+      addMessageToConversation({
+        conversationId: selectedConversationId,
+        recipients,
+        text,
+        sender: id,
+      });
+    } catch (e) {
+      console.error("Failed to add message to conversation", error);
+    }
+  };
 
   const formattedConversations = conversations.map((conversation, index) => {
     const recipients = conversation.recipients.map((recipient) => {
@@ -107,7 +142,7 @@ function ConversationsProvider({ id, children }) {
     const selected = index === selectedConversationIndex;
     return { ...conversation, messages, recipients, index, selected };
   });
-
+	
   const value = {
     conversations: formattedConversations,
     selectedConversation: formattedConversations[selectedConversationIndex],
@@ -121,16 +156,6 @@ function ConversationsProvider({ id, children }) {
       {children}
     </ConversationsContext.Provider>
   );
-}
-
-function arrayIsEqual(a, b) {
-  if (a.length !== b.length) return false;
-  a.sort();
-  b.sort();
-
-  return a.every((element, index) => {
-    return element === b[index];
-  });
 }
 
 export { useConversations, ConversationsProvider };

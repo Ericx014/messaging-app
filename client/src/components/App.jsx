@@ -21,13 +21,11 @@ const App = () => {
     const fetchUsers = async () => {
       try {
         const fetchedUsers = await userServices.getAll();
-        console.log("Existing users", fetchedUsers);
         setUsers(fetchedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -39,7 +37,7 @@ const App = () => {
       try {
         const createdUser = await userServices.create({ userId: inputUserId });
         console.log(createdUser);
-        setId(id);
+        setId(inputUserId);
         setUsers((prevUsers) => [...prevUsers, createdUser]);
       } catch (e) {
         console.error(e);

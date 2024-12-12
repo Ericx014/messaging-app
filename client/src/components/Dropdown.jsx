@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState } from "react";
 import { useCurrentId } from "./App";
 import { BsThreeDotsVertical } from "react-icons/bs";

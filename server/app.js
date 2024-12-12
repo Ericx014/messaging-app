@@ -5,6 +5,7 @@ const app = express();
 const cors = require("cors");
 const contactRouter = require("./controllers/contacts");
 const userRouter = require("./controllers/users");
+const conversationRouter = require("./controllers/conversations");
 const middleware = require("./utils/middleware");
 
 const url = process.env.MONGODB_URI;
@@ -29,6 +30,7 @@ app.use(middleware.requestLogger);
 // routes
 app.use(contactRouter);
 app.use(userRouter);
+app.use(conversationRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

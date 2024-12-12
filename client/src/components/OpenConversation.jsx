@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
+import { useCurrentId } from "./App";
 import { useConversations } from "../context/ConversationsProvider";
+import { useContacts } from "../context/ContactsProvider";
 import MessageBubble from "./MessageBubble";
 
 export default function OpenConversation() {
@@ -10,8 +12,9 @@ export default function OpenConversation() {
     }
   }, []);
 
-  const { conversations, sendMessage, selectedConversation } =
-    useConversations();
+  const { id } = useCurrentId();
+  const { contacts } = useContacts();
+  const { sendMessage, selectedConversation } = useConversations();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,8 +33,27 @@ export default function OpenConversation() {
 
   return (
     <div className="flex flex-col grow">
-      <div className="bg-[#778da924] w-full py-3 px-5 capitalize font-semibold">
-        {selectedConversation.recipients.map((r) => r.name).join(", ")}
+      <div className="bg-[#778da924] w-full py-3 px-5 font-semibold">
+        {selectedConversation.recipients.length === 2
+          ? selectedConversation.recipients
+              .filter((r) => r.id !== id)
+              .map((r) => {
+                const contact = contacts.find(
+                  (contact) => contact.contactId === r.id
+                );
+                return contact ? contact.name : r.id;
+              })[0]
+          : selectedConversation.recipients
+              .map((r) => {
+                if (r.id === id) {
+                  return "you";
+                }
+                const contact = contacts.find(
+                  (contact) => contact.contactId === r.id
+                );
+                return contact ? contact.name : r.id;
+              })
+              .join(", ")}
       </div>
       <div className="flex flex-col grow overflow-auto p-2">
         {selectedConversation.messages.map((message, index) => {

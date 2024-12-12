@@ -1,5 +1,4 @@
 import { useRef } from "react";
-// import { v4 as uuidV4 } from "uuid";
 
 const Login = ({ onIdSubmit }) => {
   const idRef = useRef();
@@ -8,10 +7,6 @@ const Login = ({ onIdSubmit }) => {
     e.preventDefault();
     onIdSubmit(idRef.current.value);
   };
-
-  // const createNewId = () => {
-  //   onIdSubmit(uuidV4());
-  // };
 
   return (
     <section className="flex justify-center items-center h-screen bg-[#778da941]">
@@ -31,13 +26,6 @@ const Login = ({ onIdSubmit }) => {
           required
         />
         <div className="flex flex-row gap-5">
-          {/* <button
-            type="button"
-            onClick={createNewId}
-            className="bg-[#4a68a0] text-white px-4 py-3 rounded-lg w-full mb-2"
-          >
-            Create a new ID
-          </button> */}
           <button
             type="submit"
             className="bg-[#1b263b] text-white px-4 py-3 rounded-lg w-full mb-2"

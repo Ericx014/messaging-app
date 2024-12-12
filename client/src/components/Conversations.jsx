@@ -1,7 +1,11 @@
 import { useConversations } from "../context/ConversationsProvider";
+import { useContacts } from "../context/ContactsProvider";
+import { useCurrentId } from "./App";
 
 export default function Conversations() {
   const { conversations, selectConversationIndex } = useConversations();
+  const { contacts } = useContacts();
+  const { id } = useCurrentId();
 
   return (
     <>
@@ -10,7 +14,7 @@ export default function Conversations() {
           key={conversation.index}
           onClick={() => {
             selectConversationIndex(conversation.index);
-						console.log(conversation)
+            console.log(conversation);
           }}
           className={`w-full py-3 px-4 cursor-pointer transition-colors duration-200 
             ${
@@ -19,7 +23,26 @@ export default function Conversations() {
                 : "hover:bg-gray-100 text-gray-800"
             }`}
         >
-          {conversation.recipients.map((r) => r.name).join(", ")}
+          {conversation.recipients.length === 2
+            ? conversation.recipients
+                .filter((r) => r.id !== id)
+                .map((r) => {
+                  const contact = contacts.find(
+                    (contact) => contact.contactId === r.id
+                  );
+                  return contact ? contact.name : r.id;
+                })[0]
+            : conversation.recipients
+                .map((r) => {
+                  if (r.id === id) {
+                    return "you";
+                  }
+                  const contact = contacts.find(
+                    (contact) => contact.contactId === r.id
+                  );
+                  return contact ? contact.name : r.id;
+                })
+                .join(", ")}
         </div>
       ))}
     </>

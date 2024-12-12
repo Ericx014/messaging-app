@@ -40,12 +40,12 @@ export default function NewConversationModal({ closeModal }) {
         </button>
         <h2 className="text-xl font-bold mb-4">Create Conversation</h2>
         {contacts.map((contact, index) => (
-          <div key={contact.id}>
+          <div key={index}>
             <input
               id={index}
               type="checkbox"
-              value={selectedContactIds.includes(contact.id)}
-              onChange={() => handleCheckBoxChange(contact.id)}
+              value={selectedContactIds.includes(contact.contactId)}
+              onChange={() => handleCheckBoxChange(contact.contactId)}
             />
             <label htmlFor={index}>{contact.name}</label>
           </div>
