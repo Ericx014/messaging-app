@@ -1,15 +1,17 @@
 import { useRef } from "react";
 import { useContacts } from "../context/ContactsProvider";
+import { useCurrentId } from "./App";
 
 export default function NewContactModal({ closeModal }) {
   const idRef = useRef();
   const nameRef = useRef();
+  const { id } = useCurrentId();
   const { createContact } = useContacts();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    createContact(idRef.current.value, nameRef.current.value);
+    createContact(idRef.current.value, nameRef.current.value, id);
+		console.log(idRef.current.value, nameRef.current.value, id);
     closeModal();
   };
 

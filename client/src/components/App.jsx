@@ -7,7 +7,11 @@ import { ConversationsProvider } from "../context/ConversationsProvider";
 import { SocketProvider } from "../context/SocketProvider";
 import userServices from "../services/users";
 
-export const IdContext = createContext();
+const IdContext = createContext();
+
+export const useCurrentId = () => {
+  return useContext(IdContext);
+};
 
 const App = () => {
   const [users, setUsers] = useState([]);
@@ -17,7 +21,7 @@ const App = () => {
     const fetchUsers = async () => {
       try {
         const fetchedUsers = await userServices.getAll();
-        console.log(fetchedUsers);
+        console.log("Existing users", fetchedUsers);
         setUsers(fetchedUsers);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -58,9 +62,6 @@ const App = () => {
   );
 
   return id ? dashboard : <Login onIdSubmit={login} />;
-};
-export const useCurrentId = () => {
-  return useContext(IdContext);
 };
 
 export default App;
