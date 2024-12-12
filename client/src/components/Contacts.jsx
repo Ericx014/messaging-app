@@ -6,7 +6,11 @@ export default function Contacts() {
   return (
     <div>
       {contacts.map((contact) => (
-        <div key={contact.id} className="border-b-[1px] border-gray-200  mx-3 py-3">
+        <div
+          key={contact.contactId}
+          className="border-b-[1px] border-gray-200  mx-3 py-3"
+					onClick={() => console.log(contact)}
+        >
           {contact.name}
         </div>
       ))}

@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import useLocalStorage from "../components/hooks/useLocalStorage";
+import ContactServices from "../services/contacts";
 
 const ContactsContext = React.createContext();
 
@@ -10,10 +11,18 @@ export function useContacts() {
 export function ContactsProvider({ children }) {
   const [contacts, setContacts] = useLocalStorage("contacts", []);
 
-  const createContact = (id, name) => {
-    setContacts((prevContacts) => {
-      return [...prevContacts, { id, name }];
-    });
+  const createContact = async (contactId, name) => {
+    const newContactObject = { contactId, name };
+
+    try {
+      const createdContact = await ContactServices.create(newContactObject);
+      setContacts((prevContacts) => {
+        return [...prevContacts, { contactId, name }];
+      });
+      console.log(createdContact);
+    } catch (e) {
+      console.error("Error creating contact", e);
+    }
   };
 
   return (
