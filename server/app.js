@@ -1,17 +1,28 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const app = express();
+
+const http = require("http");
+const { Server } = require("socket.io");
 const cors = require("cors");
+
 const contactRouter = require("./controllers/contacts");
 const userRouter = require("./controllers/users");
 const conversationRouter = require("./controllers/conversations");
 const middleware = require("./utils/middleware");
 
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+// Connect to MongoDB
 const url = process.env.MONGODB_URI;
-
 mongoose.set("strictQuery", false);
-
 console.log("Connecting to: ", process.env.MONGODB_URI);
 mongoose
   .connect(url)
@@ -35,4 +46,20 @@ app.use(conversationRouter);
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 
-module.exports = app;
+io.on("connection", (socket) => {
+  const id = socket.handshake.query.id;
+  socket.join(id);
+
+  socket.on("send-message", ({ conversationId, recipients, text }) => {
+    recipients.forEach((recipient) => {
+      socket.broadcast.to(recipient).emit("receive-message", {
+        conversationId: conversationId,
+        recipients: recipients,
+        sender: id,
+        text,
+      });
+    });
+  });
+});
+
+module.exports = { app, server };
